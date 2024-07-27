@@ -3,9 +3,12 @@
  * The trick here is SIMD and bit manipulation.
  */
 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <sys/mman.h>
 
 /* Assume: that word size is 8 bytes for now */
 
@@ -19,30 +22,33 @@
 int
 main (void)
 {
-    unsigned char buf[0x100000];
     const uintptr_t *el, *last;
     uintptr_t v;
-    size_t nread;
     unsigned res;
+    struct stat st;
 
     res = 0;
 
-    do
+    int s = fstat(STDIN_FILENO, &st);
+    if (s != 0)
     {
-        nread = (size_t) read(STDIN_FILENO, buf, sizeof(buf));
-        last = (uintptr_t *) (buf + nread);
-        for (el = (uintptr_t *) buf; el < last; ++el)
-        {
-            v = (*el & 0x7F7F7F7F7F7F7F7F) + ((~*el & 0x8080808080808080) >> 7);
-            v &= 0x8080808080808080;
-            v >>= 7;
-            v = (v >> 32) + (v & 0xFFFFFFFF);
-            v = (v >> 16) + (v & 0xFFFF);
-            v = (v >> 8)  + (v & 0xFF);
-            res += v;
-        }
+        perror("fstat");
+        return 1;
     }
-    while (nread == sizeof(buf));
+
+    const char *buf = (char *) mmap(0, st.st_size, PROT_READ,
+                            MAP_PRIVATE | MAP_POPULATE, STDIN_FILENO, 0);
+    last = (uintptr_t *) (buf + st.st_size);
+    for (el = (uintptr_t *) buf; el < last; ++el)
+    {
+        v = (*el & 0x7F7F7F7F7F7F7F7F) + ((~*el & 0x8080808080808080) >> 7);
+        v &= 0x8080808080808080;
+        v >>= 7;
+        v = (v >> 32) + (v & 0xFFFFFFFF);
+        v = (v >> 16) + (v & 0xFFFF);
+        v = (v >> 8)  + (v & 0xFF);
+        res += v;
+    }
 
     printf("%u\n", res);
 
