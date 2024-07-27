@@ -33,25 +33,13 @@ main (void)
         last = (uintptr_t *) (buf + nread);
         for (el = (uintptr_t *) buf; el < last; ++el)
         {
-            /* First, calculate the number of 0xFF and 0x7F bytes and
-             * add that:
-             */
-            v = *el & 0x7F7F7F7F7F7F7F7F;
-            v += 0x0101010101010101;
+            v = (*el & 0x7F7F7F7F7F7F7F7F) + ((~*el & 0x8080808080808080) >> 7);
             v &= 0x8080808080808080;
             v >>= 7;
             v = (v >> 32) + (v & 0xFFFFFFFF);
             v = (v >> 16) + (v & 0xFFFF);
             v = (v >> 8)  + (v & 0xFF);
             res += v;
-            /* Next, calculate the number of 0xFF bytes and subtract that: */
-            v = (*el & 0x7F7F7F7F7F7F7F7F) + ((*el & 0x8080808080808080) >> 7);
-            v &= 0x8080808080808080;
-            v >>= 7;
-            v = (v >> 32) + (v & 0xFFFFFFFF);
-            v = (v >> 16) + (v & 0xFFFF);
-            v = (v >> 8)  + (v & 0xFF);
-            res -= v;
         }
     }
     while (nread == sizeof(buf));
