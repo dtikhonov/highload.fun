@@ -19,7 +19,7 @@
 int
 main (void)
 {
-    unsigned char buf[0x1000];
+    unsigned char buf[0x100000];
     const uintptr_t *el, *last;
     uintptr_t v;
     size_t nread;
