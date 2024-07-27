@@ -39,15 +39,55 @@ main (void)
     const char *buf = (char *) mmap(0, st.st_size, PROT_READ,
                             MAP_PRIVATE | MAP_POPULATE, STDIN_FILENO, 0);
     last = (uintptr_t *) (buf + st.st_size);
-    for (el = (uintptr_t *) buf; el < last; ++el)
+    for (el = (uintptr_t *) buf; el + 7 < last; el += 8)
     {
-        v = (*el & 0x7F7F7F7F7F7F7F7F) + ((~*el & 0x8080808080808080) >> 7);
+        uintptr_t acc = 0;
+
+        v = (el[0] & 0x7F7F7F7F7F7F7F7F) + ((~el[0] & 0x8080808080808080) >> 7);
         v &= 0x8080808080808080;
         v >>= 7;
-        v = (v >> 32) + (v & 0xFFFFFFFF);
-        v = (v >> 16) + (v & 0xFFFF);
-        v = (v >> 8)  + (v & 0xFF);
-        res += v;
+        acc += v;
+
+        v = (el[1] & 0x7F7F7F7F7F7F7F7F) + ((~el[1] & 0x8080808080808080) >> 7);
+        v &= 0x8080808080808080;
+        v >>= 7;
+        acc += v;
+
+        v = (el[2] & 0x7F7F7F7F7F7F7F7F) + ((~el[2] & 0x8080808080808080) >> 7);
+        v &= 0x8080808080808080;
+        v >>= 7;
+        acc += v;
+
+        v = (el[3] & 0x7F7F7F7F7F7F7F7F) + ((~el[3] & 0x8080808080808080) >> 7);
+        v &= 0x8080808080808080;
+        v >>= 7;
+        acc += v;
+
+        v = (el[4] & 0x7F7F7F7F7F7F7F7F) + ((~el[4] & 0x8080808080808080) >> 7);
+        v &= 0x8080808080808080;
+        v >>= 7;
+        acc += v;
+
+        v = (el[5] & 0x7F7F7F7F7F7F7F7F) + ((~el[5] & 0x8080808080808080) >> 7);
+        v &= 0x8080808080808080;
+        v >>= 7;
+        acc += v;
+
+        v = (el[6] & 0x7F7F7F7F7F7F7F7F) + ((~el[6] & 0x8080808080808080) >> 7);
+        v &= 0x8080808080808080;
+        v >>= 7;
+        acc += v;
+
+        v = (el[7] & 0x7F7F7F7F7F7F7F7F) + ((~el[7] & 0x8080808080808080) >> 7);
+        v &= 0x8080808080808080;
+        v >>= 7;
+        acc += v;
+
+        acc = (acc >> 32) + (acc & 0xFFFFFFFF);
+        acc = (acc >> 16) + (acc & 0xFFFF);
+        acc = (acc >> 8)  + (acc & 0xFF);
+        res += acc;
+
     }
 
     printf("%u\n", res);
