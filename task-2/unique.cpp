@@ -39,7 +39,7 @@ djb2 (const char *str, unsigned len)
     return hash;
 }
 
-#define HASH_BITS 18
+#define HASH_BITS 20
 
 #define HASH_MASK ((1u << HASH_BITS) - 1)
 
